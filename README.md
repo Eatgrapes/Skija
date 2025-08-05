@@ -259,4 +259,4 @@ These don’t:
 - New classes, new methods that don’t exist in Skia.
 - Code that combines Skia APIs together for special use-cases.
 
-Useful things built on top of Skia/Skija are always welcome — as libraries.
+Useful things built on top of Skia/Skija are always welcome — as libraries..
