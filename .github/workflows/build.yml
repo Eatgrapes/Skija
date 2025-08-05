@@ -79,27 +79,28 @@ jobs:
           path: target/skija-linux-x64-*
 
   build_linux_arm64:
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: recursive
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '11'
-          distribution: 'adopt'
-      - run: |
-          sudo apt-get update
-          sudo apt-get --quiet --yes install ninja-build libglu1-mesa-dev libegl-dev libwayland-dev libglvnd-dev libegl1-mesa libegl1-mesa-dev python3-pip clang
-          pip3 install --user pyyaml
-      - run: python3 script/build.py --arch arm64
-      - run: python3 script/test.py
-      - run: python3 script/package_platform.py --arch arm64
-      - uses: actions/upload-artifact@v4
-        with:
-          name: linux-arm64-jars
-          path: target/skija-linux-arm64-*
+   runs-on: ubuntu-24.04-arm
+   steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: recursive
+    - uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get --quiet --yes install ninja-build libglu1-mesa-dev libegl1 libegl-mesa0 libwayland-dev libglvnd-dev libegl1-mesa-dev python3-pip clang
+        pip3 install --user pyyaml
+    - run: python3 script/build.py --arch arm64
+    - run: python3 script/test.py
+    - run: python3 script/package_platform.py --arch arm64
+    - uses: actions/upload-artifact@v4
+      with:
+        name: linux-arm64-jars
+        path: target/skija-linux-arm64-*
 
   build_windows:
     runs-on: windows-2022
