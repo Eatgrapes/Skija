@@ -27,7 +27,7 @@ def main():
       os.remove(zip)
     skia_dir = os.path.abspath(skia_dir)
   print("Using Skia from", skia_dir, flush=True)
-  
+
   # CMake
   native_build_dir = f'target/{common.classifier}/native'
   build_utils.makedirs(native_build_dir)
@@ -37,20 +37,6 @@ def main():
     '-DCMAKE_BUILD_TYPE=' + build_type,
     '-DSKIA_DIR=' + skia_dir,
     '-DSKIA_ARCH=' + build_utils.arch]
-
-  if build_utils.system == 'linux' and build_utils.arch == 'arm64':
-      egl_paths = [
-          '/usr/lib/aarch64-linux-gnu/libEGL.so',
-          '/usr/lib/aarch64-linux-gnu/libEGL.so.1',
-          '/usr/lib/aarch64-linux-gnu/mesa-egl/libEGL.so',
-      ]
-      for egl_path in egl_paths:
-          if os.path.exists(egl_path):
-              cmake_args.append(f"-DSKIA_EGL_LIBRARY={egl_path}")
-              break
-      else:
-          print("Warning: EGL library not found, disabling EGL support")
-          cmake_args.append("-DUSE_EGL=OFF")
 
   if build_utils.system == 'macos':
     cmake_args += ['-DCMAKE_OSX_ARCHITECTURES=' + {'x64': 'x86_64', 'arm64': 'arm64'}[build_utils.arch]]
@@ -62,7 +48,9 @@ def main():
   elif (build_utils.system == 'linux') and (build_utils.arch != build_utils.native_arch):
     if build_utils.arch == 'arm64':
       cross_compile.setup_linux_arm64(native_build_dir, cmake_args)
-  
+
+  subprocess.check_call(cmake_args, cwd=os.path.abspath(native_build_dir))
+
   # Ninja
   build_utils.ninja(os.path.abspath(native_build_dir))
 
