@@ -20,7 +20,7 @@ def main():
     skia_dir = "Skia-" + args.skia_release + "-" + build_utils.system + "-" + build_type + '-' + build_utils.arch
     if not os.path.exists(skia_dir):
       zip = skia_dir + '.zip'
-      build_utils.fetch('https://github.com/HumbleUI/SkiaBuild/releases/download/' + args.skia_release + '/' + zip, zip)
+      build_utils.fetch('https://github.com/Eatgrapes/SkiaBuild/releases/download/' + args.skia_release + '/' + zip, zip)
       with zipfile.ZipFile(zip, 'r') as f:
         print("Extracting", zip, flush=True)
         f.extractall(skia_dir)
