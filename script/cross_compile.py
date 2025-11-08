@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-import build_utils, subprocess
+import build_utils, subprocess, os
 from typing import List
 
 def extract_deb(url: str, name: str, native_build_dir: str):
@@ -13,7 +13,6 @@ def setup_linux_arm64(native_build_dir: str, cmake_args: List[str]):
   deps_dir = f'{native_build_dir}/deps'
   build_utils.makedirs(deps_dir)
 
-  # libfreetype.so
   freetype = extract_deb(
     'http://ftp.us.debian.org/debian/pool/main/f/freetype/libfreetype6_2.10.4+dfsg-1+deb11u1_arm64.deb',
     'libfreetype',
@@ -24,7 +23,6 @@ def setup_linux_arm64(native_build_dir: str, cmake_args: List[str]):
     f'{deps_dir}/libfreetype.so'
   )
 
-  # libGL.so
   libgl1 = extract_deb(
     'http://ftp.us.debian.org/debian/pool/main/libg/libglvnd/libgl1_1.3.2-1_arm64.deb',
     'libgl1',
@@ -35,7 +33,6 @@ def setup_linux_arm64(native_build_dir: str, cmake_args: List[str]):
     f'{deps_dir}/libGL.so'
   )
 
-  # libfontconfig.so
   libfontconfig1 = extract_deb(
     'http://ftp.us.debian.org/debian/pool/main/f/fontconfig/libfontconfig1_2.13.1-4.2_arm64.deb',
     'libfontconfig1',
@@ -46,10 +43,22 @@ def setup_linux_arm64(native_build_dir: str, cmake_args: List[str]):
     f'{deps_dir}/libfontconfig.so'
   )
 
+  libegl1 = extract_deb(
+    'http://ftp.us.debian.org/debian/pool/main/libg/libglvnd/libegl1_1.3.2-1_arm64.deb',
+    'libegl1',
+    native_build_dir
+  )
+  build_utils.copy_newer(
+    f'{libegl1}/usr/lib/aarch64-linux-gnu/libEGL.so.1.1.0',
+    f'{deps_dir}/libEGL.so'
+  )
+
   cmake_args += [
     '-DCMAKE_SYSTEM_NAME=Linux',
     '-DCMAKE_SYSTEM_PROCESSOR=aarch64',
     '-DCMAKE_C_COMPILER=/usr/bin/aarch64-linux-gnu-gcc-9',
     '-DCMAKE_CXX_COMPILER=/usr/bin/aarch64-linux-gnu-g++-9',
-    '-DDEPS_DIR=' + deps_dir
+    '-DDEPS_DIR=' + deps_dir,
+    '-DSKIA_EGL_LIBRARY=' + f'{deps_dir}/libEGL.so',
+    '-DSKIA_GL_LIBRARY=' + f'{deps_dir}/libGL.so'
   ]
