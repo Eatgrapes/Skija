@@ -10,7 +10,7 @@ def extract_deb(url: str, name: str, native_build_dir: str):
   return target
 
 def setup_linux_arm64(native_build_dir: str, cmake_args: List[str]):
-  deps_dir = f'{native_build_dir}/deps'
+  deps_dir = os.path.abspath(f'{native_build_dir}/deps')
   build_utils.makedirs(deps_dir)
 
   freetype = extract_deb(
@@ -58,7 +58,8 @@ def setup_linux_arm64(native_build_dir: str, cmake_args: List[str]):
     '-DCMAKE_SYSTEM_PROCESSOR=aarch64',
     '-DCMAKE_C_COMPILER=/usr/bin/aarch64-linux-gnu-gcc-9',
     '-DCMAKE_CXX_COMPILER=/usr/bin/aarch64-linux-gnu-g++-9',
-    '-DDEPS_DIR=' + deps_dir,
+    '-DFREETYPE_LIBRARY=' + f'{deps_dir}/libfreetype.so',
+    '-DFONT_CONFIG_LIBRARY=' + f'{deps_dir}/libfontconfig.so',
     '-DSKIA_EGL_LIBRARY=' + f'{deps_dir}/libEGL.so',
     '-DSKIA_GL_LIBRARY=' + f'{deps_dir}/libGL.so'
   ]
