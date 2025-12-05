@@ -108,6 +108,33 @@ jobs:
           name: windows-x64-jars
           path: target/skija-windows-x64-*
 
+  build_android:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - run: |
+          sudo apt-get update
+          sudo apt-get --yes install openjdk-11-jdk wget unzip
+          wget https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip -O cmdline-tools.zip
+          unzip cmdline-tools.zip
+          sudo mkdir -p /opt/android-sdk/cmdline-tools/latest
+          sudo mv cmdline-tools/* /opt/android-sdk/cmdline-tools/latest/
+          sudo chown -R $USER:$USER /opt/android-sdk
+          echo "y" | /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-33" "build-tools;33.0.0" "ndk;25.1.8937393"
+          echo "ANDROID_SDK_ROOT=/opt/android-sdk" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=/opt/android-sdk/ndk/25.1.8937393" >> $GITHUB_ENV
+          echo "JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64" >> $GITHUB_ENV
+          echo "/opt/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+      - run: python3 script/build.py --system android --arch arm64
+      - run: python3 script/test.py --system android
+      - run: python3 script/package_platform.py --system android --arch arm64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-arm64-jars
+          path: target/skija-android-arm64-*
+
   release:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
