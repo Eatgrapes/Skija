@@ -35,31 +35,47 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(FindSkia)
 include("${SKIA_LIBRARY_DIR}/defines.cmake")
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    add_definitions(-DNDEBUG)
-endif()
+if(CMAKE_BUILD_TYPE STREQUAL "Release")  
+    add_definitions(-DNDEBUG)  
+endif()  
 
-if(APPLE)
-    target_include_directories(skija PRIVATE $ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/darwin)
+# Enable RTTI globally for this project - this is critical for typeinfo symbols
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frtti")
 
-elseif(UNIX)
-    target_include_directories(skija PRIVATE $ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/linux)
+if(APPLE)  
+    target_include_directories(skija PRIVATE $ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/darwin)  
 
-elseif(ANDROID)
-    target_include_directories(skija PRIVATE ${SKIA_DIR}/include/core ${SKIA_DIR}/include/gpu ${SKIA_DIR}/include/effects ${SKIA_DIR}/include/pathops ${SKIA_DIR}/include/utils/android $ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/linux)
+elseif(UNIX)  
+    target_include_directories(skija PRIVATE $ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/linux)  
 
-elseif(WIN32)
-    set(CMAKE_C_COMPILER cl)
-    set(CMAKE_CXX_COMPILER cl)
+elseif(ANDROID)  
+    target_include_directories(skija PRIVATE ${SKIA_DIR}/include/core ${SKIA_DIR}/include/gpu ${SKIA_DIR}/include/effects ${SKIA_DIR}/include/pathops ${SKIA_DIR}/include/utils/android $ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/linux)  
 
-    target_include_directories(skija PRIVATE $ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/win32)
-    target_link_libraries(skija d3d12 dxgi d3dcompiler)
+    # Android specific system libraries must be linked after all other libraries
+    target_link_libraries(skija 
+        android
+        log
+        EGL
+        GLESv2
+    )
+    
+    # Force include all symbols from Skia libraries to resolve RTTI issues
+    target_link_options(skija PRIVATE
+        "-Wl,--whole-archive"
+        "${SKIA_LIBRARY}"
+        "-Wl,--no-whole-archive"
+    )
 
-    # target_compile_options(skija PRIVATE /MT)
-    # set_property(TARGET skija PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded")
-    set(CMAKE_CXX_FLAGS_RELEASE "/MT")
-    set(CMAKE_CXX_FLAGS_DEBUG "/MTd")
+elseif(WIN32)  
+    set(CMAKE_C_COMPILER cl)  
+    set(CMAKE_CXX_COMPILER cl)  
+
+    target_include_directories(skija PRIVATE $ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/win32)  
+    target_link_libraries(skija d3d12 dxgi d3dcompiler)  
+
+    set(CMAKE_CXX_FLAGS_RELEASE "/MT")  
+    set(CMAKE_CXX_FLAGS_DEBUG "/MTd")  
     target_link_options(skija PRIVATE /INCREMENTAL:NO /NODEFAULTLIB:MSVCRT /machine:X64)
-endif()
+endif()  
 
 target_link_libraries(skija skottie sksg svg skparagraph skshaper skunicode skresources skia ${FREETYPE_LIBRARIES} ${HARFBUZZ_LIBRARIES})
