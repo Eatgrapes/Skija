@@ -11,7 +11,7 @@ def get_arg(name):
 execdir = os.getcwd()
 native_arch = {'AMD64': 'x64', 'x86_64': 'x64', 'arm64': 'arm64', 'aarch64': 'arm64'}[platform.machine()]
 arch   = get_arg("arch")   or native_arch
-system = get_arg("system") or {'Darwin': 'macos', 'Linux': 'linux', 'Windows': 'windows'}[platform.system()]
+system = get_arg("system") or {'Darwin': 'macos', 'Linux': 'linux', 'Windows': 'windows', 'Android': 'android'}[platform.system()]
 classpath_separator = ';' if platform.system() == 'Windows' else ':'
 mvn = "mvn.cmd" if platform.system() == "Windows" else "mvn"
 lombok_version = '1.18.42'

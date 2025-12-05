@@ -45,6 +45,9 @@ if(APPLE)
 elseif(UNIX)
     target_include_directories(skija PRIVATE $ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/linux)
 
+elseif(ANDROID)
+    target_include_directories(skija PRIVATE ${SKIA_DIR}/include/core ${SKIA_DIR}/include/gpu ${SKIA_DIR}/include/effects ${SKIA_DIR}/include/pathops ${SKIA_DIR}/include/utils/android $ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/linux)
+
 elseif(WIN32)
     set(CMAKE_C_COMPILER cl)
     set(CMAKE_CXX_COMPILER cl)

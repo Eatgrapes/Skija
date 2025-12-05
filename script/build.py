@@ -20,7 +20,7 @@ def main():
     skia_dir = "Skia-" + args.skia_release + "-" + build_utils.system + "-" + build_type + '-' + build_utils.arch
     if not os.path.exists(skia_dir):
       zip = skia_dir + '.zip'
-      build_utils.fetch('https://github.com/HumbleUI/SkiaBuild/releases/download/' + args.skia_release + '/' + zip, zip)
+      build_utils.fetch('https://github.com/Eatgrapes/SkiaBuild/releases/download/' + args.skia_release + '/' + zip, zip)
       with zipfile.ZipFile(zip, 'r') as f:
         print("Extracting", zip, flush=True)
         f.extractall(skia_dir)
@@ -40,6 +40,14 @@ def main():
 
   if build_utils.system == 'macos':
     cmake_args += ['-DCMAKE_OSX_ARCHITECTURES=' + {'x64': 'x86_64', 'arm64': 'arm64'}[build_utils.arch]]
+  elif build_utils.system == 'android':
+    toolchain_file = os.path.join(os.environ['ANDROID_NDK_HOME'], 'build', 'cmake', 'android.toolchain.cmake')
+    cmake_args += ['-DCMAKE_TOOLCHAIN_FILE=' + toolchain_file,
+                   '-DANDROID_ABI=' + {'arm64': 'arm64-v8a', 'arm': 'armeabi-v7a', 'x64': 'x86_64', 'x86': 'x86'}[build_utils.arch],
+                   '-DANDROID_NATIVE_API_LEVEL=21',
+                   '-DANDROID_PLATFORM=android-21',
+                   '-DANDROID_TOOLCHAIN=clang',
+                   '-DANDROID_STL=c++_static']
 
   cmake_args += [os.path.abspath('.')]
 
@@ -97,6 +105,8 @@ def main():
   elif build_utils.system == 'windows':
     build_utils.copy_newer(f'{native_build_dir}/skija.dll', f'{target}/skija.dll')
     build_utils.copy_newer(f'{skia_dir}/out/{build_type}-{build_utils.arch}/icudtl.dat', f'{target}/icudtl.dat')
+  elif build_utils.system == 'android':
+    build_utils.copy_newer(f'{native_build_dir}/libskija.so', f'{target}/libskija.so')
 
   return 0
 
