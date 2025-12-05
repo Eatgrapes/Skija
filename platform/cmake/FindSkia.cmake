@@ -40,11 +40,7 @@ find_library(SKSHAPER_LIBRARY skshaper PATH "${SKIA_LIBRARY_DIR}")
 find_path(SKSHAPER_INCLUDE_DIR SkShaper.h HINTS "${SKIA_DIR}/modules/skshaper/include")
 if(NOT FREETYPE_LIBRARIES)
   set(FREETYPE_FOUND ON)
-  if(ANDROID)
-    # For Android, use the NDK provided Freetype
-    find_library(FREETYPE_LIBRARY freetype PATHS ${ANDROID_NDK_HOME}/sysroot/usr/lib/${ANDROID_ABI} NO_DEFAULT_PATH)
-    find_path(FREETYPE_INCLUDE_DIRS freetype/freetype.h PATHS ${ANDROID_NDK_HOME}/sysroot/usr/include NO_DEFAULT_PATH)
-  elseif (UNIX AND NOT APPLE)
+  if (UNIX AND NOT APPLE)
     # Dynamically linked because fontconfig is dynamically linked
     # https://github.com/JetBrains/skija/issues/113
     find_library(FREETYPE_LIBRARY freetype)
@@ -52,18 +48,12 @@ if(NOT FREETYPE_LIBRARIES)
     find_library(FREETYPE_LIBRARY freetype2 PATH "${SKIA_LIBRARY_DIR}")
   endif()
   set(FREETYPE_LIBRARIES ${FREETYPE_LIBRARY})
-  set(FREETYPE_INCLUDE_DIRS "${FREETYPE_INCLUDE_DIRS};${SKIA_DIR}/third_party/externals/freetype/include")
+  set(FREETYPE_INCLUDE_DIRS "${SKIA_DIR}/third_party/externals/freetype/include")
 endif()
 if(NOT HARFBUZZ_LIBRARIES)
-  if(ANDROID)
-    # For Android, use the NDK provided Harfbuzz
-    find_library(HARFBUZZ_LIBRARY harfbuzz PATHS ${ANDROID_NDK_HOME}/sysroot/usr/lib/${ANDROID_ABI} NO_DEFAULT_PATH)
-    find_path(HARFBUZZ_INCLUDE_DIRS harfbuzz/hb.h PATHS ${ANDROID_NDK_HOME}/sysroot/usr/include NO_DEFAULT_PATH)
-  else()
-    find_library(HARFBUZZ_LIBRARY NAMES harfbuzz HINTS "${SKIA_LIBRARY_DIR}")
-  endif()
+  find_library(HARFBUZZ_LIBRARY NAMES harfbuzz HINTS "${SKIA_LIBRARY_DIR}")
   set(HARFBUZZ_LIBRARIES ${HARFBUZZ_LIBRARY})
-  set(HARFBUZZ_INCLUDE_DIRS "${HARFBUZZ_INCLUDE_DIRS};${SKIA_DIR}/third_party/externals/harfbuzz/src")
+  set(HARFBUZZ_INCLUDE_DIRS "${SKIA_DIR}/third_party/externals/harfbuzz/src")
 endif()
 add_library(skshaper INTERFACE)
 target_link_libraries(skshaper INTERFACE ${SKSHAPER_LIBRARY})
@@ -132,8 +122,6 @@ target_include_directories(skia INTERFACE
   ${SKUNICODE_INCLUDE_DIR}
   ${SKSHAPER_INCLUDE_DIR}
   ${SKPARAGRAPH_INCLUDE_DIR}
-  ${FREETYPE_INCLUDE_DIRS}
-  ${HARFBUZZ_INCLUDE_DIRS}
   ${SKIA_SVG_INCLUDE_DIR}
   ${SKIA_SKOTTIE_INCLUDE_DIR}
   ${SKIA_SKSG_INCLUDE_DIR}
@@ -145,6 +133,11 @@ target_include_directories(skia INTERFACE
 if(WIN32)
   target_include_directories(skia INTERFACE
     ${SKIA_ANGLE_INCLUDE_DIR})
+endif()
+if(NOT ANDROID)
+  target_include_directories(skia INTERFACE
+    ${FREETYPE_INCLUDE_DIRS}
+    ${HARFBUZZ_INCLUDE_DIRS})
 endif()
 target_link_libraries(skia INTERFACE ${SKIA_LIBRARIES})
 target_compile_definitions(skia INTERFACE
