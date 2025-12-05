@@ -111,25 +111,16 @@ set(SKIA_LIBRARIES
 
 add_library(skia INTERFACE)
 target_include_directories(skia INTERFACE
-  ${SKIA_DIR}
-  ${SKIA_CONFIG_INCLUDE_DIR}
-  ${SKIA_CORE_INCLUDE_DIR}
-  ${SKIA_DIR}/include/encode
-  ${SKIA_PATHOPS_INCLUDE_DIR}
-  ${SKIA_CORE_SVG_INCLUDE_DIR}
-  ${SKIA_UTILS_INCLUDE_DIR}
-  ${SKIA_CODEC_INCLUDE_DIR}
-  ${SKIA_EFFECTS_INCLUDE_DIR}
-  ${SKIA_SKCMS_INCLUDE_DIR}
-  ${SKUNICODE_INCLUDE_DIR}
-  ${SKSHAPER_INCLUDE_DIR}
-  ${SKPARAGRAPH_INCLUDE_DIR}
-  ${SKIA_SVG_INCLUDE_DIR}
-  ${SKIA_SKOTTIE_INCLUDE_DIR}
-  ${SKIA_SKSG_INCLUDE_DIR}
+  ${SKIA_DIR}/include
+  ${SKIA_DIR}/modules/skunicode/include
+  ${SKIA_DIR}/modules/skshaper/include
+  ${SKIA_DIR}/modules/skparagraph/include
+  ${SKIA_DIR}/modules/svg/include
+  ${SKIA_DIR}/modules/skottie/include
+  ${SKIA_DIR}/modules/sksg/include
+  ${SKIA_DIR}/modules/skresources/include
   ${SKIA_DIR}/third_party/externals/icu/source/common
   ${SKIA_DIR}/third_party/icu
-  ${SKIA_SKRESOURCES_INCLUDE_DIR}
 )
 
 if(WIN32)
