@@ -78,4 +78,8 @@ elseif(WIN32)
     target_link_options(skija PRIVATE /INCREMENTAL:NO /NODEFAULTLIB:MSVCRT /machine:X64)
 endif()  
 
-target_link_libraries(skija skottie sksg svg skparagraph skshaper skunicode skresources skia ${FREETYPE_LIBRARIES} ${HARFBUZZ_LIBRARIES})
+target_link_libraries(skija skottie sksg svg skparagraph skshaper skunicode skresources skia)
+
+if(NOT ANDROID)
+    target_link_libraries(skija ${FREETYPE_LIBRARIES} ${HARFBUZZ_LIBRARIES})
+endif()
