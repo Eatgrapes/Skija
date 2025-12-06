@@ -62,4 +62,10 @@ elseif(WIN32)
     target_link_options(skija PRIVATE /INCREMENTAL:NO /NODEFAULTLIB:MSVCRT /machine:X64)
 endif()
 
-target_link_libraries(skija skottie sksg svg skparagraph skshaper skunicode skresources skia ${FREETYPE_LIBRARIES} ${HARFBUZZ_LIBRARIES})
+if(NOT ANDROID)
+    target_link_libraries(skija skottie sksg svg skparagraph skshaper skunicode skresources skia ${FREETYPE_LIBRARIES} ${HARFBUZZ_LIBRARIES})
+else()
+    # Android build does not need to link FREETYPE_LIBRARIES and HARFBUZZ_LIBRARIES explicitly
+    # as they are likely handled by Skia's internal build or not needed for the specific Skia build configuration.
+    target_link_libraries(skija skottie sksg svg skparagraph skshaper skunicode skresources skia)
+endif()
