@@ -40,6 +40,16 @@ def main():
 
   if build_utils.system == 'macos':
     cmake_args += ['-DCMAKE_OSX_ARCHITECTURES=' + {'x64': 'x86_64', 'arm64': 'arm64'}[build_utils.arch]]
+  elif build_utils.system == 'android':
+    cmake_args += [
+      '-DCMAKE_TOOLCHAIN_FILE=' + os.path.join(os.environ['ANDROID_NDK_HOME'], 'build', 'cmake', 'android.toolchain.cmake'),
+      '-DANDROID_NDK=' + os.environ['ANDROID_NDK_HOME'],
+      '-DANDROID_ABI=' + {'x64': 'x86_64', 'arm64': 'arm64-v8a'}[build_utils.arch],
+      '-DANDROID_NATIVE_API_LEVEL=21',
+      '-DANDROID_TOOLCHAIN=clang',
+      '-DANDROID_STL=c++_static',
+      '-DSKIA_ARCH=' + build_utils.arch
+    ]
 
   cmake_args += [os.path.abspath('.')]
 
@@ -96,6 +106,9 @@ def main():
     build_utils.copy_newer(f'{native_build_dir}/libskija.so', f'{target}/libskija.so')
   elif build_utils.system == 'windows':
     build_utils.copy_newer(f'{native_build_dir}/skija.dll', f'{target}/skija.dll')
+    build_utils.copy_newer(f'{skia_dir}/out/{build_type}-{build_utils.arch}/icudtl.dat', f'{target}/icudtl.dat')
+  elif build_utils.system == 'android':
+    build_utils.copy_newer(f'{native_build_dir}/libskija.so', f'{target}/libskija.so')
     build_utils.copy_newer(f'{skia_dir}/out/{build_type}-{build_utils.arch}/icudtl.dat', f'{target}/icudtl.dat')
 
   return 0

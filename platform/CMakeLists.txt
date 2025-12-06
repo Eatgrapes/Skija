@@ -45,6 +45,9 @@ if(APPLE)
 elseif(UNIX)
     target_include_directories(skija PRIVATE $ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/linux)
 
+elseif(ANDROID)
+    target_include_directories(skija PRIVATE $ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/linux) # Android uses linux JNI headers
+
 elseif(WIN32)
     set(CMAKE_C_COMPILER cl)
     set(CMAKE_CXX_COMPILER cl)
