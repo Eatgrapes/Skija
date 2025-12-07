@@ -59,4 +59,11 @@ elseif(WIN32)
     target_link_options(skija PRIVATE /INCREMENTAL:NO /NODEFAULTLIB:MSVCRT /machine:X64)
 endif()
 
-target_link_libraries(skija skottie sksg svg skparagraph skshaper skunicode skresources skia ${FREETYPE_LIBRARIES} ${HARFBUZZ_LIBRARIES})
+target_link_libraries(skija skottie sksg svg skparagraph skshaper skunicode skresources skia)
+
+if(CMAKE_SYSTEM_NAME STREQUAL Android)
+    target_link_libraries(skija
+        "${SKIA_LIBRARY_DIR}/libfreetype2.a"
+        "${SKIA_LIBRARY_DIR}/libharfbuzz.a"
+    )
+endif()

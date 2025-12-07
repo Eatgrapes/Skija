@@ -15,10 +15,6 @@ else()
     set(SKIA_LIBRARY_DIR "${SKIA_DIR}/out/Release-${SKIA_ARCH}" CACHE PATH "Skia library directory" FORCE)
   endif()
 endif()
-MESSAGE(STATUS "SKIA_DIR: ${SKIA_DIR}")
-MESSAGE(STATUS "SKIA_ARCH: ${SKIA_ARCH}")
-MESSAGE(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}")
-MESSAGE(STATUS "SKIA_LIBRARY_DIR: ${SKIA_LIBRARY_DIR}")
 
 # Skia library
 find_library(SKIA_LIBRARY skia PATH "${SKIA_LIBRARY_DIR}")
@@ -42,48 +38,10 @@ target_link_libraries(skunicode INTERFACE ${SKUNICODE_CORE_LIBRARY} ${SKUNICODE_
 find_path(SKUNICODE_INCLUDE_DIR SkUnicode.h HINTS "${SKIA_DIR}/modules/skunicode/include")
 
 # SkShaper module + freetype + harfbuzz
-find_library(SKSHAPER_LIBRARY skshaper PATH "${SKIA_LIBRARY_DIR}")
 find_path(SKSHAPER_INCLUDE_DIR SkShaper.h HINTS "${SKIA_DIR}/modules/skshaper/include")
-if(NOT FREETYPE_LIBRARIES)
-  set(FREETYPE_FOUND ON)
-  if (UNIX AND NOT APPLE)
-    # Dynamically linked because fontconfig is dynamically linked
-    # https://github.com/JetBrains/skija/issues/113
-    find_library(FREETYPE_LIBRARY freetype)
-  elseif(CMAKE_SYSTEM_NAME STREQUAL Android)
-    # Explicitly set the path for Android builds
-    set(FREETYPE_LIBRARY "${SKIA_LIBRARY_DIR}/libfreetype2.a")
-    if (EXISTS "${FREETYPE_LIBRARY}")
-        MESSAGE(STATUS "Android FREETYPE_LIBRARY path set to: ${FREETYPE_LIBRARY}")
-    else()
-        MESSAGE(STATUS "Android FREETYPE_LIBRARY NOT FOUND at ${FREETYPE_LIBRARY}")
-        # Fallback for safety, though it should ideally fail if not found
-        set(FREETYPE_LIBRARY FALSE)
-    endif()
-  else()
-    find_library(FREETYPE_LIBRARY freetype2 PATH "${SKIA_LIBRARY_DIR}")
-  endif()
-  set(FREETYPE_LIBRARIES ${FREETYPE_LIBRARY})
-  set(FREETYPE_INCLUDE_DIRS "${SKIA_DIR}/third_party/externals/freetype/include")
-endif()
+set(FREETYPE_INCLUDE_DIRS "${SKIA_DIR}/third_party/externals/freetype/include")
 
-if(NOT HARFBUZZ_LIBRARIES)
-  if(CMAKE_SYSTEM_NAME STREQUAL Android)
-    # Explicitly set the path for Android builds
-    set(HARFBUZZ_LIBRARY "${SKIA_LIBRARY_DIR}/libharfbuzz.a")
-    if (EXISTS "${HARFBUZZ_LIBRARY}")
-        MESSAGE(STATUS "Android HARFBUZZ_LIBRARY path set to: ${HARFBUZZ_LIBRARY}")
-    else()
-        MESSAGE(STATUS "Android HARFBUZZ_LIBRARY NOT FOUND at ${HARFBUZZ_LIBRARY}")
-        # Fallback for safety
-        set(HARFBUZZ_LIBRARY FALSE)
-    endif()
-  else()
-    find_library(HARFBUZZ_LIBRARY NAMES harfbuzz HINTS "${SKIA_LIBRARY_DIR}")
-  endif()
-  set(HARFBUZZ_LIBRARIES ${HARFBUZZ_LIBRARY})
-  set(HARFBUZZ_INCLUDE_DIRS "${SKIA_DIR}/third_party/externals/harfbuzz/src")
-endif()
+set(HARFBUZZ_INCLUDE_DIRS "${SKIA_DIR}/third_party/externals/harfbuzz/src")
 add_library(skshaper INTERFACE)
 target_link_libraries(skshaper INTERFACE ${SKSHAPER_LIBRARY})
 
