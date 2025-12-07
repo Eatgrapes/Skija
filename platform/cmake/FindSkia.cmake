@@ -47,7 +47,7 @@ if(NOT FREETYPE_LIBRARIES)
     # https://github.com/JetBrains/skija/issues/113
     find_library(FREETYPE_LIBRARY freetype)
   elseif(CMAKE_SYSTEM_NAME STREQUAL Android)
-    find_library(FREETYPE_LIBRARY NAMES freetype libfreetype.a PATH "${SKIA_LIBRARY_DIR}" NO_CMAKE_FIND_ROOT_PATH)
+    find_library(FREETYPE_LIBRARY NAMES freetype libfreetype.a libfreetype2.a PATH "${SKIA_LIBRARY_DIR}" NO_CMAKE_FIND_ROOT_PATH)
   else()
     find_library(FREETYPE_LIBRARY freetype2 PATH "${SKIA_LIBRARY_DIR}")
   endif()
