@@ -5,6 +5,7 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--debug', action='store_true')
   parser.add_argument('--arch', default=build_utils.arch)
+  parser.add_argument('--system', default=build_utils.system)
   parser.add_argument('--skia-dir')
   parser.add_argument('--skia-release', default='m143-da51f0d60e')
   parser.add_argument('--cmake-toolchain-file')
@@ -17,7 +18,7 @@ def main():
     os.chdir(common.basedir + '/platform')
   else:
     os.chdir(common.basedir + '/platform')
-    skia_dir = "Skia-" + args.skia_release + "-" + build_utils.system + "-" + build_type + '-' + build_utils.arch
+    skia_dir = "Skia-" + args.skia_release + "-" + args.system + "-" + build_type + '-' + args.arch
     if not os.path.exists(skia_dir):
       zip = skia_dir + '.zip'
       build_utils.fetch('https://github.com/Eatgrapes/SkiaBuild/releases/download/' + args.skia_release + '/' + zip, zip)
@@ -29,24 +30,32 @@ def main():
   print("Using Skia from", skia_dir, flush=True)
 
   # CMake
-  native_build_dir = f'target/{common.classifier}/native'
+  classifier = f'{args.system}-{args.arch}'
+  native_build_dir = f'target/{classifier}/native'
   build_utils.makedirs(native_build_dir)
   cmake_args = [
     'cmake',
     '-G', 'Ninja',
     '-DCMAKE_BUILD_TYPE=' + build_type,
     '-DSKIA_DIR=' + skia_dir,
-    '-DSKIA_ARCH=' + build_utils.arch]
+    '-DSKIA_ARCH=' + args.arch]
 
-  if build_utils.system == 'macos':
-    cmake_args += ['-DCMAKE_OSX_ARCHITECTURES=' + {'x64': 'x86_64', 'arm64': 'arm64'}[build_utils.arch]]
+  if args.system == 'macos':
+    cmake_args += ['-DCMAKE_OSX_ARCHITECTURES=' + {'x64': 'x86_64', 'arm64': 'arm64'}[args.arch]]
+  elif args.system == 'android':
+    cmake_args += [
+      '-DCMAKE_TOOLCHAIN_FILE=' + os.path.abspath(f'{common.basedir}/platform/cmake/android.toolchain.cmake'),
+      '-DANDROID_NDK=' + os.environ.get('ANDROID_NDK_HOME'),
+      '-DANDROID_ABI=' + {'arm64': 'arm64-v8a', 'x64': 'x86_64'}[args.arch],
+      '-DANDROID_NATIVE_API_LEVEL=21' # Or higher, depending on requirements
+    ]
 
   cmake_args += [os.path.abspath('.')]
 
   if args.cmake_toolchain_file:
     cmake_args += ['-DCMAKE_TOOLCHAIN_FILE=' + args.cmake_toolchain_file]
-  elif (build_utils.system == 'linux') and (build_utils.arch != build_utils.native_arch):
-    if build_utils.arch == 'arm64':
+  elif (args.system == 'linux') and (args.arch != build_utils.native_arch):
+    if args.arch == 'arm64':
       cross_compile.setup_linux_arm64(native_build_dir, cmake_args)
 
   subprocess.check_call(cmake_args, cwd=os.path.abspath(native_build_dir))
@@ -55,7 +64,7 @@ def main():
   build_utils.ninja(os.path.abspath(native_build_dir))
 
   # Codesign
-  if build_utils.system == 'macos' and os.getenv('APPLE_CODESIGN_IDENTITY'):
+  if args.system == 'macos' and os.getenv('APPLE_CODESIGN_IDENTITY'):
     subprocess.call(['codesign',
                      # '--force',
                      # '-vvvvvv',
@@ -77,26 +86,28 @@ def main():
 
   build_utils.copy_replace(
       'java/module-info.java',
-      f'target/{common.classifier}/java/module-info.java',
-      {'${system}': build_utils.system, '${arch}': build_utils.arch}
+      f'target/{classifier}/java/module-info.java',
+      {'${system}': args.system, '${arch}': args.arch}
   )
   build_utils.javac(
-      [f'target/{common.classifier}/java/module-info.java'],
-      f'target/{common.classifier}/classes',
+      [f'target/{classifier}/java/module-info.java'],
+      f'target/{classifier}/classes',
       release = '9',
       opts = ['-nowarn']
   )
 
   # Copy files
-  target = f'target/{common.classifier}/classes/io/github/humbleui/skija/{build_utils.system}/{build_utils.arch}'
+  target = f'target/{classifier}/classes/io/github/humbleui/skija/{args.system}/{args.arch}'
 
-  if build_utils.system == 'macos':
+  if args.system == 'macos':
     build_utils.copy_newer(f'{native_build_dir}/libskija.dylib', f'{target}/libskija.dylib')
-  elif build_utils.system == 'linux':
+  elif args.system == 'linux':
     build_utils.copy_newer(f'{native_build_dir}/libskija.so', f'{target}/libskija.so')
-  elif build_utils.system == 'windows':
+  elif args.system == 'windows':
     build_utils.copy_newer(f'{native_build_dir}/skija.dll', f'{target}/skija.dll')
-    build_utils.copy_newer(f'{skia_dir}/out/{build_type}-{build_utils.arch}/icudtl.dat', f'{target}/icudtl.dat')
+    build_utils.copy_newer(f'{skia_dir}/out/{build_type}-{args.arch}/icudtl.dat', f'{target}/icudtl.dat')
+  elif args.system == 'android':
+    build_utils.copy_newer(f'{native_build_dir}/libskija.so', f'{target}/libskija.so')
 
   return 0
 

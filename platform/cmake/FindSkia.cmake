@@ -22,10 +22,12 @@ if(WIN32)
   set(SKIA_OPENGL_LIBRARY opengl32 CACHE STRING "...")
 elseif(APPLE)
   find_library(SKIA_OPENGL_LIBRARY OpenGL NAMES GL)
+elseif(CMAKE_SYSTEM_NAME STREQUAL Android)
+  find_library(SKIA_OPENGL_LIBRARY GLESv2 NAMES GLESv2)
 else()
-    find_library(SKIA_GL_LIBRARY opengl NAMES GL)
-    find_library(SKIA_EGL_LIBRARY EGL NAMES EGL)
-    set(SKIA_OPENGL_LIBRARY ${SKIA_GL_LIBRARY} ${SKIA_EGL_LIBRARY})
+  find_library(SKIA_GL_LIBRARY opengl NAMES GL)
+  find_library(SKIA_EGL_LIBRARY EGL NAMES EGL)
+  set(SKIA_OPENGL_LIBRARY ${SKIA_GL_LIBRARY} ${SKIA_EGL_LIBRARY})
 endif()
 
 # SkUnicode
@@ -155,6 +157,14 @@ if(WIN32)
 elseif(APPLE)
   target_compile_definitions(skia INTERFACE
     SK_BUILD_FOR_MAC)
+elseif(CMAKE_SYSTEM_NAME STREQUAL Android)
+  include("${SKIA_LIBRARY_DIR}/defines.cmake")
+  target_link_libraries(skia INTERFACE
+    android
+    log
+    GLESv2)
+  target_compile_definitions(skia INTERFACE
+    SK_BUILD_FOR_ANDROID)
 else()
   target_compile_definitions(skia INTERFACE
     SK_SAMPLES_FOR_X)
