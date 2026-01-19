@@ -1,10 +1,6 @@
 #include <jni.h>
 #include "../interop.hh"
 
-#ifndef JNI_VERSION_1_8
-#define JNI_VERSION_1_8 0x00010008
-#endif
-
 #include "../shaper/interop.hh"
 #include "../skottie/interop.hh"
 #include "../paragraph/interop.hh"
