@@ -1,6 +1,10 @@
 #include <iostream>
 #include <jni.h>
 
+#ifndef JNI_VERSION_1_8
+#define JNI_VERSION_1_8 0x00010008
+#endif
+
 #include "SkDrawable.h"
 #include "SkPicture.h"
 #include "interop.hh"
